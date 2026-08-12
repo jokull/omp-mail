@@ -54,17 +54,49 @@ export default function ompMail(pi: ExtensionAPI) {
   }
   function writeCursor(seq: number) { try { writeFileSync(cursorPath(), String(seq)); } catch {} }
 
+  // Rapid-exchange detection: >=3 messages with the same peer in 60s is a
+  // ping-pong loop, not work. Suppressed deliveries become context, not turns.
+  const peerRecent = new Map<string, number[]>();
+  function noteExchange(peer: string) {
+    const now = Date.now();
+    const arr = (peerRecent.get(peer) ?? []).filter((t) => now - t < 60_000);
+    arr.push(now);
+    peerRecent.set(peer, arr);
+  }
+  function inPingPong(peer: string): boolean {
+    const now = Date.now();
+    const arr = (peerRecent.get(peer) ?? []).filter((t) => now - t < 60_000);
+    peerRecent.set(peer, arr);
+    return arr.length >= 3;
+  }
+
   async function deliver(m: MailMsg) {
     if (injected.has(m.id)) return;
+    const cursor = readCursor();
+    if (m.seq <= cursor) {
+      // Already delivered in a previous process life — never re-act on it.
+      injected.add(m.id);
+      return;
+    }
     injected.add(m.id);
+    noteExchange(m.from);
     const from = m.fromName ?? m.from;
     const addr = m.fromSlug ?? m.from;
     const header = `${from}${m.fromSlug && m.fromSlug !== from ? ` (slug ${m.fromSlug})` : ""}`;
     const text =
       `📬 Mail from ${header}: ${m.subject}\n\n${m.body}\n\n` +
-      `Reply with mail_send({to: "${addr}", subject: ..., body: ...}) — args as a JSON object, keep the body short.`;
+      `Reply with mail_send({to: "${addr}", subject: ..., body: ...}) only if a response is actually wanted — new work, a question, or a blocker. Confirmations and closings need no reply.`;
     try {
-      await pi.sendUserMessage(text);
+      if (inPingPong(m.from)) {
+        // Loop suppression: deliver as hidden context for the next user prompt
+        // instead of starting an autonomous turn.
+        log(`loop suppression: ${m.from} (${m.subject}) -> context`);
+        await pi.sendMessage({ content: text, display: false, attribution: "user" }, { deliverAs: "nextTurn" });
+      } else {
+        await pi.sendUserMessage(text);
+      }
+      // Durable cursor at delivery time — a kill/resume must not replay seen mail.
+      if (m.seq > readCursor()) writeCursor(m.seq);
     } catch (e) {
       log(`deliver failed: ${String(e)}`);
     }
@@ -176,6 +208,7 @@ export default function ompMail(pi: ExtensionAPI) {
     if (connected) {
       const res = await request({ type: "send", to, subject, body }, 3000);
       if (res?.type === "ok") {
+        if (res.toId) noteExchange(res.toId);
         return { ok: true, note: res.live > 0 ? "delivered live" : "delivered (offline — inbox on resume)" };
       }
       if (res?.type === "error") return { ok: false, note: res.message };

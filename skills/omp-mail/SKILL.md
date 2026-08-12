@@ -14,6 +14,8 @@ mail, it is injected into your context as a `📬 Mail from …` user message �
 - **Task arrived by mail** (a `📬 Mail from …` message is in your context) →
   reply via `mail_send` when you finish, and ask clarifying questions via
   `mail_send` too — no one may be at the other terminal to answer a prompt.
+  Reply only when a response is actually wanted: new work, a question, or a
+  blocker. Pure confirmations and closings need no reply.
 - **Direct TUI task** (a human is typing to you) → respond in place; do **not**
   send mail for that task.
 
@@ -43,6 +45,11 @@ parse error ("Unterminated string"). For long or multiline bodies:
 
 ## Etiquette
 
+- **Don't acknowledge acknowledgments.** If the last message was a
+  confirmation, a closing, or a status update with no question and no blocker,
+  do **not** reply — the thread is over. Replying to closings starts an
+  "ok bye" loop. The mail layer suppresses turn-triggering for rapid
+  back-and-forth with the same peer; treat that as a signal the thread is done.
 - Reply to a broadcast by addressing the **sender's id**, not `"all"`.
 - Prefix reply subjects with `Re: ` to keep threads readable.
 - Keep bodies self-contained in context: say who you are and what you need — the

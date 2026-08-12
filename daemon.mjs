@@ -125,8 +125,8 @@ const server = createServer((socket) => {
         const a = registry[sessionId];
         if (!a) return sendTo(socket, { type: "error", op: "meta", message: "unknown session", reqId: frame.reqId });
         if (frame.name && frame.name !== a.name) {
-          a.name = frame.name;
-          if (!frame.keepSlug) a.slug = uniqueSlug(frame.name, sessionId);
+          a.name = frame.name; // display name tracks the session title
+          // slug is a stable address — never re-rolled on title changes
           saveRegistry();
           log(`meta ${sessionId} name=${a.name} slug=${a.slug}`);
         }
@@ -161,6 +161,13 @@ const server = createServer((socket) => {
         if (!targets || !targets.length) {
           return sendTo(socket, { type: "error", op: "send", message: `unknown recipient: ${frame.to}`, reqId: frame.reqId });
         }
+        if (targets.length === 1 && targets[0] === sessionId) {
+          return sendTo(socket, {
+            type: "error", op: "send",
+            message: `self-send blocked: "${frame.to}" resolves to your own session`,
+            reqId: frame.reqId,
+          });
+        }
         const base = {
           id: `${Date.now().toString(36)}-${randomBytes(4).toString("hex")}`,
           from: sessionId,
@@ -179,7 +186,7 @@ const server = createServer((socket) => {
           else log(`mail ${msg.id} -> ${t} (offline, stored seq=${msg.seq})`);
         }
         log(`send "${base.subject || "(no subject)"}" ${base.from} -> ${frame.to} (${targets.length} mailbox(es), ${live} live)`);
-        sendTo(socket, { type: "ok", op: "send", to: frame.to, delivered: targets.length, live, reqId: frame.reqId });
+        sendTo(socket, { type: "ok", op: "send", to: frame.to, toId: targets.length === 1 ? targets[0] : null, delivered: targets.length, live, reqId: frame.reqId });
         break;
       }
       case "list": {
