@@ -1,0 +1,23 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "omp-mail",
+  "owner": {
+    "name": "Jökull Sólberg Auðunsson",
+    "email": "jokull@solberg.is"
+  },
+  "metadata": {
+    "description": "Federated agent mail for oh-my-pi: inter-session messaging across omp processes",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "omp-mail",
+      "description": "Inter-session agent mail: mail_send/mail_agents tools, /mail command, auto-slug + alias addressing, broadcast, offline inbox-on-resume",
+      "source": "./",
+      "version": "0.1.0",
+      "category": "development",
+      "homepage": "https://github.com/jokull/omp-mail",
+      "keywords": ["omp", "agent", "mail", "messaging"]
+    }
+  ]
+}
