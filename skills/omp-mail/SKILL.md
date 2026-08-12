@@ -28,12 +28,26 @@ mail, it is injected into your context as a `📬 Mail from …` user message �
   3. `"all"` — broadcast to every registered session (sender included; use
      sparingly — replies to broadcasts should target the sender's id directly)
 
+## Invocation: JSON args
+
+`mail_send` takes its arguments as a JSON object — `{ "to": …, "subject": …, "body": … }`.
+Write it as **valid single-line JSON**: literal newlines inside a JSON string are a
+parse error ("Unterminated string"). For long or multiline bodies:
+
+- **Point, don't paste.** The recipient is an agent with full tool access — it can
+  read repo files itself. A body like `See HANDOFF.md in the repo root — implement
+  the fix there, reply by mail when done or blocked.` beats pasting a document into
+  JSON.
+- Only inline text the recipient cannot read itself.
+- If you must inline multiline text, escape newlines (`\n`) in the JSON string.
+
 ## Etiquette
 
 - Reply to a broadcast by addressing the **sender's id**, not `"all"`.
 - Prefix reply subjects with `Re: ` to keep threads readable.
-- Keep bodies self-contained: the recipient may have no other context about you
-  or the task.
+- Keep bodies self-contained in context: say who you are and what you need — the
+  recipient may have no other context about you or the task. For detail, point to
+  files the recipient can read; don't paste large documents into the body.
 - Mail is not instant-messaging: the recipient may be offline or mid-task. State
   what you need and when, so they can act on arrival.
 - If a peer is unknown, run `mail_agents()` before guessing an address —

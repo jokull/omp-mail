@@ -62,7 +62,7 @@ export default function ompMail(pi: ExtensionAPI) {
     const header = `${from}${m.fromSlug && m.fromSlug !== from ? ` (slug ${m.fromSlug})` : ""}`;
     const text =
       `📬 Mail from ${header}: ${m.subject}\n\n${m.body}\n\n` +
-      `Reply with mail_send(to: "${addr}", subject: ..., body: ...).`;
+      `Reply with mail_send({to: "${addr}", subject: ..., body: ...}) — args as a JSON object, keep the body short.`;
     try {
       await pi.sendUserMessage(text);
     } catch (e) {
@@ -266,8 +266,10 @@ export default function ompMail(pi: ExtensionAPI) {
     name: "mail_send",
     label: "Mail Send",
     description:
-      "Send a mail message to another omp session. `to` may be a session id, an auto-generated slug, " +
-      "a user alias, or \"all\" for broadcast. Discover addresses with mail_agents.",
+      "Send a mail message to another omp session. `to` accepts slug, alias, session id, or \"all\". " +
+      "Arguments are a JSON object {to, subject, body} — write valid single-line JSON (escape newlines as \\n). " +
+      "Keep `body` short: the recipient can read repo files, so point to them instead of pasting. " +
+      "Discover recipient addresses with mail_agents.",
     parameters: z.object({
       to: z.string().describe("Recipient: session id, slug, alias, or \"all\""),
       subject: z.string().describe("Short subject line"),
