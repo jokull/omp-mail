@@ -1,0 +1,32 @@
+{
+  "name": "omp-mail",
+  "version": "0.1.0",
+  "description": "Federated agent mail for oh-my-pi: inter-session messaging across omp processes via a singleton mailbox daemon",
+  "license": "MIT",
+  "type": "module",
+  "files": [
+    "omp-mail.ts",
+    "daemon.mjs",
+    "skills/",
+    "README.md"
+  ],
+  "omp": {
+    "extensions": [
+      "./omp-mail.ts"
+    ]
+  },
+  "keywords": [
+    "omp",
+    "oh-my-pi",
+    "extension",
+    "plugin",
+    "mail",
+    "agent",
+    "messaging"
+  ],
+  "homepage": "https://github.com/jokull/omp-mail",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jokull/omp-mail"
+  }
+}
