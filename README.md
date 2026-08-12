@@ -6,6 +6,7 @@ an **auto-generated slug**, or a **user alias** — mail is delivered live when
 the recipient is running, and stored for **inbox-on-resume** when it is not.
 
 No core changes — it is a plain [extension](https://github.com/can1357/oh-my-pi) plus a small Node daemon.
+Install: `/marketplace add jokull/omp-mail` → `/marketplace install omp-mail@omp-mail`.
 
 ## Sending mail
 
@@ -87,17 +88,32 @@ omp (agent A)        omp (agent B)        omp (agent C)
 
 ## Install
 
-```sh
-# clone anywhere, then either:
+It's on a marketplace — two commands:
 
+```
+/marketplace add jokull/omp-mail
+/marketplace install omp-mail@omp-mail
+```
+
+(CLI equivalents: `omp plugin marketplace add jokull/omp-mail` then `omp plugin install omp-mail@omp-mail`.)
+
+Prefer iterating on the code? Link the repo — changes are live on the next omp start:
+
+```
+omp plugin link /path/to/omp-mail
+```
+
+### Raw install (no plugin system)
+
+```sh
 # 1) per-invocation
 omp -e /path/to/omp-mail/omp-mail.ts
 
 # 2) global — loads in every omp session
-cp omp-mail.ts ~/.omp/agent/extensions/
+cp omp-mail.ts daemon.mjs ~/.omp/agent/extensions/
 
 # 3) project-local
-mkdir -p .omp/extensions && cp omp-mail.ts .omp/extensions/
+mkdir -p .omp/extensions && cp omp-mail.ts daemon.mjs .omp/extensions/
 ```
 
 The daemon auto-spawns on first use — nothing else to start. Override the
@@ -122,8 +138,9 @@ Agents use the same surface via tools:
 
 `skills/omp-mail/SKILL.md` teaches the model the mail channel: reply by mail
 when a task arrived by mail, reply in the TUI when driven directly, how to
-address peers, and broadcast etiquette. Auto-discovered when the extension is
-loaded via `-e`/`extensions:` (bundled `skills/` dir), or install standalone:
+address peers, and broadcast etiquette. It ships bundled with the plugin
+(marketplace/link/npm installs discover it automatically). For raw file
+installs, copy it alongside:
 
 ```sh
 cp -r skills/omp-mail ~/.omp/agent/skills/
