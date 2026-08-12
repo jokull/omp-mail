@@ -1,6 +1,6 @@
 {
   "name": "omp-mail",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Federated agent mail for oh-my-pi: inter-session messaging across omp processes via a singleton mailbox daemon",
   "license": "MIT",
   "type": "module",
